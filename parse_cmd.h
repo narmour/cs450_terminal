@@ -32,7 +32,10 @@ struct pipecmd{
 
 
 // return a pointer to a redir cmd struct
-struct redir* redir(char **command,int num_words);
+struct redir* createRedir(char **command,int num_words);
+
+// return a pointer to a exec cmd struct
+struct exec* createExec(char **command,int num_words);
 
 // command is the command to be identified as exec or redir
 struct cmd*  parseCmd(char **command,int num_words);

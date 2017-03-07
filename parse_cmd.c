@@ -60,6 +60,60 @@ int readCmd(char **line,int num_words){
 }
 */
 
+struct redir* createRedir(char **command,int num_words){
+
+	struct redir *r = (struct redir*)malloc(sizeof(struct redir));
+    r->id = '>';
+    // parse components of redir
+
+
+
+
+	// get the exec command first
+	int j =0;
+	char **e = (char**)malloc(sizeof(char**) * num_words);
+	while(j <num_words){
+		if(*command[j] == '>' ||
+			*command[j] == '<')
+				break;
+		    e[j] = command[j];
+			j++;
+
+		}
+    struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
+    ex->id =' ';
+    ex->cmd = e[0];
+    ex->args = e;
+    r->cmd = ex;
+    
+    // get rest of redir struct    
+    //j = > or <   j+1 = filename
+    r->r1 = *command[j++];
+	r->fd1 = command[j++];
+	// this means its an input redir into an output redir
+	if(j < num_words){
+		r->r2 = *command[j++];
+		r->fd2 = command[j];
+    }
+    return r;
+
+
+
+}
+
+struct exec* createExec(char **command,int num_words){
+    struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
+    ex->id =' ';
+    ex->cmd = command[0];
+    ex->args = command;
+
+    return ex;
+
+
+
+
+}
+
 
 struct cmd* parseCmd(char **command,int num_words){
     int i =0;
@@ -89,46 +143,11 @@ struct cmd* parseCmd(char **command,int num_words){
    }
    
    else if(redir ==1){
-		struct redir *r = (struct redir*)malloc(sizeof(struct redir));
-        r->id = '>';
-		// parse components of redir
-		
-		// get the exec command first
-		int j =0;
-		char **e = (char**)malloc(sizeof(char**) * num_words);
-		while(j <num_words){
-			if(*command[j] == '>' ||
-				*command[j] == '<')
-					break;
-			e[j] = command[j];
-			j++;
-
-		}
-        struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
-        ex->id =' ';
-        ex->cmd = e[0];
-        ex->args = e;
-        r->cmd = ex;
-        
-		//j = > or <   j+1 = filename
-		r->r1 = *command[j++];
-		r->fd1 = command[j++];
-		// this means its an input redir into an output redir
-		if(j < num_words){
-			r->r2 = *command[j++];
-			r->fd2 = command[j];
-
-		}
         // set c as the redir
-        return (struct cmd*)r;
-       // printCmd(&c);
+        return (struct cmd*)createRedir(command,num_words);
 	}
 	else{
-        struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
-        ex->id = ' ';
-        ex->cmd =command[0];
-        ex->args = command; 
-        return (struct cmd*)ex;
+        return (struct cmd*)createExec(command,num_words);
 	}
 }
 

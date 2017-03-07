@@ -31,11 +31,8 @@ struct pipecmd{
 };
 
 
-// execute all commands in line
-void parseLine(char *line[MAX_LINE_WORDS+1],int num_words);
-
-// read in one command from line. return number of words read
-int readCmd(char **line,int num_words);
+// return a pointer to a redir cmd struct
+struct redir* redir(char **command,int num_words);
 
 // command is the command to be identified as exec or redir
 struct cmd*  parseCmd(char **command,int num_words);

@@ -84,7 +84,7 @@ struct cmd* parseCmd(char **command,int num_words){
    
    if(pipe ==1){
        puts("its a pipe cmd");
-       struct pipe *p = (struct pipe*)malloc(sizeof(struct pipe));
+       //struct pipe *p = (struct pipe*)malloc(sizeof(struct pipe));
 
    }
    

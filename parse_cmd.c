@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include "constants.h"
 #include "parse_cmd.h"
+#include "string.h"
 
 
 void printCmd(struct cmd *c){
     // weird c. cant declare struct inside of switch? 
     struct exec *e;
     struct redir *r;
+    struct pipecmd *p;
     switch(c->id){
         case ' ':
             e = (struct exec *)c;
@@ -32,6 +34,18 @@ void printCmd(struct cmd *c){
             puts("");
             //printf("redir exec: %s\n\n",r->cmd->cmd);
             break;
+        case '|':
+            p = (struct pipecmd*)c;
+            printCmd(p->left);
+            if(p->right !=NULL)
+                printCmd(p->right);
+            break;
+            
+
+
+
+
+
 
     }
 }
@@ -105,7 +119,12 @@ struct exec* createExec(char **command,int num_words){
     struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
     ex->id =' ';
     ex->cmd = command[0];
-    ex->args = command;
+    ex->args = (char **)malloc(sizeof(char*) * num_words);
+    for(int i =0; i <num_words;i++){
+        ex->args[i] = (char *)malloc(sizeof(char) * MAX_LINE_CHARS); 
+        strcpy(ex->args[i],command[i]);
+
+    }
 
     return ex;
 
@@ -114,8 +133,76 @@ struct exec* createExec(char **command,int num_words){
 
 }
 
+int readTillPipe(char **command,char **fill,int num_words){
+    int i =0;
+    while(i < num_words){
+        if(*command[i] == '|')
+            break;
+        fill[i] = command[i];
+        i++;
+    }
+    return i;
+
+
+
+}
+
+struct pipecmd* createPipe(char **command,int num_words){
+       struct pipecmd *p = (struct pipecmd*)malloc(sizeof(struct pipecmd));
+       p->id= '|';
+
+       char **next = (char**)malloc(sizeof(char**) * num_words);
+
+    
+       // go through entire command string
+       int i =0;
+       int cmd_words = 0;
+       while(i < num_words){
+           cmd_words = readTillPipe(&command[i],next,num_words -i);
+           if(p->left == NULL){
+               //puts("set left");
+               p->left = parseCmd(next,cmd_words);
+               
+           }
+           else if (p->right ==NULL){
+               //puts("set right");
+               p->right = parseCmd(next,cmd_words);
+           }
+
+           memset(next,0,sizeof(next));// reset buffer array
+           i+=cmd_words;
+           i++; // go past pipe word
+
+
+           if(i<num_words && p->right !=NULL){
+                //puts("more pipes to be parsed");
+                struct pipecmd *nextPipe = (struct pipecmd*)malloc(sizeof(struct pipecmd));
+                nextPipe->id ='|';
+                nextPipe->left = (struct cmd*)p;
+                nextPipe->right = (struct cmd*)createPipe(&command[i],num_words-i);
+                return nextPipe;
+
+           }
+          
+
+
+        }
+
+       return p;
+
+
+
+}
+
 
 struct cmd* parseCmd(char **command,int num_words){
+    /*
+    printf("parseCmd num_words: %i ",num_words);
+    for(int i =0;i < num_words;i++)
+        printf("%s ",command[i]);
+    puts("");
+    */
+
     int i =0;
     // bool for redir, 1 if redir, 0 if not == exec
     int redir =0;
@@ -126,27 +213,29 @@ struct cmd* parseCmd(char **command,int num_words){
             case '>':
             case '<':
                 redir =1;
-                i++;
                 break;
             case '|':
                 pipe =1;
-                i++;
                 break;
-            default: i++;
         }
+        i++;
     }
    
    if(pipe ==1){
-       puts("its a pipe cmd");
-       //struct pipe *p = (struct pipe*)malloc(sizeof(struct pipe));
+       puts("pipe cmd");
+       return (struct cmd*)createPipe(command,num_words);
+
+
 
    }
    
    else if(redir ==1){
+       puts("redir cmd");
         // set c as the redir
-        return (struct cmd*)createRedir(command,num_words);
+       return (struct cmd*)createRedir(command,num_words);
 	}
 	else{
+        puts("exec cmd");
         return (struct cmd*)createExec(command,num_words);
 	}
 }

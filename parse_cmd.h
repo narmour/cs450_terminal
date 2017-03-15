@@ -1,4 +1,7 @@
+#ifndef PARSE_CMD_H
+#define PARSE_CMD_H
 //base class
+
 struct cmd{
     int id;
 };
@@ -37,6 +40,9 @@ struct redir* createRedir(char **command,int num_words);
 // return a pointer to a exec cmd struct
 struct exec* createExec(char **command,int num_words);
 
+// return a pointer to a pipe cmd struct
+struct pipecmd* createPipe(char **command,int num_words);
+
 // command is the command to be identified as exec or redir
 struct cmd*  parseCmd(char **command,int num_words);
 
@@ -47,9 +53,4 @@ void printCmd(struct cmd *c);
 
 
 
-
-//ls /usr/bin | head -10 | tail -5
-
-
-// to parse arbitrary pipe:
-// read in a command, if next word is a | read another command
+#endif

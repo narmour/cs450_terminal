@@ -3,6 +3,7 @@
 #include "parsetools.h"
 #include <sys/wait.h>
 #include "parse_cmd.h"
+#include "exec_cmd.h"
 
 
 
@@ -24,7 +25,8 @@ int main() {
         // types of commands: regular exec, redir,
         // pipe
        //parseLine(line_words,num_words);
-       printCmd(parseCmd(line_words,num_words));
+       //printCmd(parseCmd(line_words,num_words));
+       runCmd(parseCmd(line_words,num_words));
 
         // Just for demonstration purposes
         //for (int i=0; i < num_words; i++)

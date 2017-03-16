@@ -222,7 +222,7 @@ struct cmd* parseCmd(char **command,int num_words){
     }
    
    if(pipe ==1){
-       puts("pipe cmd");
+       //puts("pipe cmd");
        return (struct cmd*)createPipe(command,num_words);
 
 
@@ -230,12 +230,12 @@ struct cmd* parseCmd(char **command,int num_words){
    }
    
    else if(redir ==1){
-       puts("redir cmd");
+       //puts("redir cmd");
         // set c as the redir
        return (struct cmd*)createRedir(command,num_words);
 	}
 	else{
-        puts("exec cmd");
+        //puts("exec cmd");
         return (struct cmd*)createExec(command,num_words);
 	}
 }

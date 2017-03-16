@@ -36,9 +36,12 @@ void printCmd(struct cmd *c){
             break;
         case '|':
             p = (struct pipecmd*)c;
+            //printf("LEFT SIDE PIPE: ");
             printCmd(p->left);
-            if(p->right !=NULL)
+            if(p->right !=NULL){
+                //printf("rIGHT SIDE PIPE: ");
                 printCmd(p->right);
+            }
             break;
             
 
@@ -175,11 +178,16 @@ struct pipecmd* createPipe(char **command,int num_words){
 
 
            if(i<num_words && p->right !=NULL){
-                //puts("more pipes to be parsed");
+               // puts("more pipes to be parsed");
                 struct pipecmd *nextPipe = (struct pipecmd*)malloc(sizeof(struct pipecmd));
                 nextPipe->id ='|';
                 nextPipe->left = (struct cmd*)p;
+                //puts("LEFT SIDE OF PIPE");
+                //printCmd((struct cmd*)p);
                 nextPipe->right = (struct cmd*)createPipe(&command[i],num_words-i);
+                //puts("RIGHT SIDE OF PIPE");
+                //printCmd(nextPipe->right);
+
                 return nextPipe;
 
            }

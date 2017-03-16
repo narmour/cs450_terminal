@@ -2,16 +2,21 @@
 
 
 void runCmd(struct cmd*c){
-    //puts("run cmd called");
+   // puts("run cmd called");
     // weird c. cant declare struct inside of switch? 
     struct exec *e;
     struct redir *r;
     struct pipecmd *p;
     int fd;
-
+    if (c ==0){
+        puts("found null");
+        exit(1);
+    }
     switch(c->id){
+
         case ' ':
             e = (struct exec *)c;
+            //printf("EXEC CASE CMD %s\n",e->cmd);
             execvp(e->cmd,e->args);
             puts("didnt run cmd");
             break;
@@ -53,13 +58,15 @@ void runCmd(struct cmd*c){
 
                 }
        case '|':
+            //puts("PIPE CASE");
+            //printCmd(c);
             p = (struct pipecmd*)c;
             int pfd[2];
             pipe(pfd);
 
 
             // right side of pipe
-            if(fork() ==0){
+            if(p->right !=NULL && fork() ==0){
                 close(0);
                 dup(pfd[0]);
                 close(pfd[1]);
@@ -67,9 +74,12 @@ void runCmd(struct cmd*c){
             }
             // left side of pipe
             else{
-                close(1);
-                dup(pfd[1]);
-                close(pfd[1]);
+                //puts("running left side!");
+                if(p->right !=NULL){
+                    close(1);
+                    dup(pfd[1]);
+                    close(pfd[1]);
+                }
                 runCmd(p->left);
             }
             break;

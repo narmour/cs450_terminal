@@ -44,51 +44,27 @@ void printCmd(struct cmd *c){
             }
             break;
             
-
-
-
-
-
-
     }
 }
 
-
-/*
-int readCmd(char **line,int num_words){
-
-    char **command_text = (char **)malloc(num_words * sizeof(char**)+ 1);
-
-    int i =0;
-    while(i <num_words){
-        if(*line[i] =='|'){
-            break;
+void stripQuotes(char **word,int num_words){
+    for(int i =0;i<num_words;i++){
+        if(word[i][0] =='\'' || word[i][0] == '\"'){
+            char *w = word[i];
+            w++;
+            w[strlen(w)-1] = 0;
+            word[i] = w;
         }
-        command_text[i] = line[i];
-        i+=1;
     }
-
-    printCmd(parseCmd(command_text,i));
-    
-
-    return i;
-
-
 }
-*/
 
 struct redir* createRedir(char **command,int num_words){
-
 	struct redir *r = (struct redir*)malloc(sizeof(struct redir));
     r->id = '>';
-    // parse components of redir
-
-
-
 
 	// get the exec command first
 	int j =0;
-	char **e = (char**)malloc(sizeof(char**) * num_words);
+	char **e = (char**)malloc(sizeof(char**) * num_words+1);
 	while(j <num_words){
 		if(*command[j] == '>' ||
 			*command[j] == '<')
@@ -104,7 +80,6 @@ struct redir* createRedir(char **command,int num_words){
     r->cmd = ex;
     
     // get rest of redir struct    
-    //j = > or <   j+1 = filename
     r->r1 = *command[j++];
 	r->fd1 = command[j++];
 	// this means its an input redir into an output redir
@@ -113,16 +88,13 @@ struct redir* createRedir(char **command,int num_words){
 		r->fd2 = command[j];
     }
     return r;
-
-
-
 }
 
 struct exec* createExec(char **command,int num_words){
     struct exec *ex = (struct exec*)malloc(sizeof(struct exec));
     ex->id =' ';
     ex->cmd = command[0];
-    ex->args = (char **)malloc(sizeof(char*) * num_words);
+    ex->args = (char **)malloc(sizeof(char*) * num_words+1);
     for(int i =0; i <num_words;i++){
         ex->args[i] = (char *)malloc(sizeof(char) * MAX_LINE_CHARS); 
         strcpy(ex->args[i],command[i]);
@@ -130,10 +102,6 @@ struct exec* createExec(char **command,int num_words){
     }
 
     return ex;
-
-
-
-
 }
 
 int readTillPipe(char **command,char **fill,int num_words){
@@ -150,12 +118,11 @@ int readTillPipe(char **command,char **fill,int num_words){
 
 }
 
+
 struct pipecmd* createPipe(char **command,int num_words){
        struct pipecmd *p = (struct pipecmd*)malloc(sizeof(struct pipecmd));
        p->id= '|';
-
        char **next = (char**)malloc(sizeof(char**) * num_words);
-
     
        // go through entire command string
        int i =0;
@@ -178,39 +145,23 @@ struct pipecmd* createPipe(char **command,int num_words){
 
 
            if(i<num_words && p->right !=NULL){
-               // puts("more pipes to be parsed");
                 struct pipecmd *nextPipe = (struct pipecmd*)malloc(sizeof(struct pipecmd));
                 nextPipe->id ='|';
                 nextPipe->left = (struct cmd*)p;
-                //puts("LEFT SIDE OF PIPE");
-                //printCmd((struct cmd*)p);
                 nextPipe->right = (struct cmd*)createPipe(&command[i],num_words-i);
-                //puts("RIGHT SIDE OF PIPE");
-                //printCmd(nextPipe->right);
 
                 return nextPipe;
 
            }
           
 
-
         }
 
        return p;
 
-
-
 }
 
-
 struct cmd* parseCmd(char **command,int num_words){
-    /*
-    printf("parseCmd num_words: %i ",num_words);
-    for(int i =0;i < num_words;i++)
-        printf("%s ",command[i]);
-    puts("");
-    */
-
     int i =0;
     // bool for redir, 1 if redir, 0 if not == exec
     int redir =0;
@@ -228,48 +179,17 @@ struct cmd* parseCmd(char **command,int num_words){
         }
         i++;
     }
+   stripQuotes(command,num_words); 
    
    if(pipe ==1){
-       //puts("pipe cmd");
        return (struct cmd*)createPipe(command,num_words);
-
-
-
    }
    
    else if(redir ==1){
-       //puts("redir cmd");
-        // set c as the redir
        return (struct cmd*)createRedir(command,num_words);
 	}
 	else{
-        //puts("exec cmd");
         return (struct cmd*)createExec(command,num_words);
 	}
 }
-
-
-
-/*
-void parseLine(char *line[MAX_LINE_WORDS+1],int num_words){
-    
-    int i =0;
-    while (i < num_words){
-        switch(*line[i]){
-            case '|':
-                puts("found pipe");
-                i+=1;
-        }
-        i += readCmd(&line[i],num_words -i);
-
-        // switch on next character after a command
-        //exec command c
-    }
-
-}
-*/
-
-
-
-
 
